@@ -112,8 +112,10 @@ streamlit run main.py
 ---
 
 ## 📸 Demo
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2757f073-25ae-4698-9071-31181dd1aa09" />
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/88f2aac8-5c41-4038-b3a4-2ac75b41ee00" />
+<img width="1916" height="861" alt="image" src="https://github.com/user-attachments/assets/d4902d39-7ee4-4c94-9204-3058574e1275" />
+<img width="1917" height="865" alt="image" src="https://github.com/user-attachments/assets/afc6f5f5-6e92-46cd-ae79-a77e4dec626b" />
+
+
 
 
 
