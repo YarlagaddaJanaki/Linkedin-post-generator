@@ -1,52 +1,161 @@
-from llm_helper import llm
 from few_shots import FewShotPosts
+from prompts.prompt_templates import LINKEDIN_PROMPT
+from services.llm_service import LLMService
 
 few_shot = FewShotPosts()
+llm_service = LLMService()
 
 
 def get_length_str(length):
     if length == "Short":
         return "1 to 5 lines"
-    if length == "Medium":
+    elif length == "Medium":
         return "6 to 10 lines"
-    if length == "Long":
+    else:
         return "11 to 15 lines"
 
 
-def generate_post(length, language, tag):
-    prompt = get_prompt(length, language, tag)
+def generate_post(
+    length,
+    language,
+    tag,
+    audience,
+    tone,
+    emoji,
+    cta,
+    model_name,
+    retrieved_context=""
+):
+
+    # Normalize common job-search topics
+    job_topics = [
+    "job searching",
+    "job search",
+    "looking for job",
+    "looking for a job",
+    "looking for opportunities",
+    "looking for opportunity",
+    "open to work",
+    "open to opportunities",
+    "career opportunity",
+    "career opportunities",
+    "new opportunity",
+    "new opportunities",
+    "seeking job",
+    "seeking opportunities",
+    "hiring",
+    "job"
+]
+
+    if tag.lower().strip() in job_topics:
+        tag = "Open To Work"
+
+    prompt = get_prompt(
+        length,
+        language,
+        tag,
+        audience,
+        tone,
+        emoji,
+        cta,
+        retrieved_context
+    )
+
+    llm = llm_service.get_llm(model_name)
+
     response = llm.invoke(prompt)
+
     return response.content
 
 
-def get_prompt(length, language, tag):
+def get_prompt(
+    length,
+    language,
+    tag,
+    audience,
+    tone,
+    emoji,
+    cta,
+    retrieved_context=""
+):
+
     length_str = get_length_str(length)
 
-    prompt = f'''
-    Generate a LinkedIn post using the below information. No preamble.
+    prompt = LINKEDIN_PROMPT.format(
+        topic=tag,
+        audience=audience,
+        tone=tone,
+        length=length_str,
+        language=language,
+        emoji=emoji,
+        cta="Yes" if cta else "No"
+    )
 
-    1) Topic: {tag}
-    2) Length: {length_str}
-    3) Language: {language}
-    If Language is Hinglish then it means it is a mix of Hindi and English. 
-    The script for the generated post should always be English.
-    '''
-    # prompt = prompt.format(post_topic=tag, post_length=length_str, post_language=language)
+    # -------- Resume Context (RAG) -------- #
 
-    examples = few_shot.get_filtered_posts(length, language, tag)
+    if retrieved_context:
+
+        prompt += f"""
+
+IMPORTANT INSTRUCTIONS:
+
+You are writing a LinkedIn post for the owner of the uploaded resume.
+
+Use the resume information below as the PRIMARY source of information.
+
+Do NOT invent projects, skills, achievements, certifications, companies, or experiences that are not present.
+
+If the topic matches the resume, naturally include the relevant projects, technologies, achievements, and skills.
+
+If the topic is "Open To Work", write the post in first person ("I", "my") and mention that I am actively seeking new opportunities. Highlight my skills and projects from the resume and politely request referrals or opportunities.
+
+Resume Information:
+------------------------
+{retrieved_context}
+------------------------
+
+"""
+
+    else:
+
+        prompt += """
+
+IMPORTANT INSTRUCTIONS:
+
+Generate an engaging LinkedIn post based only on the user's topic.
+
+If the topic is "Open To Work", write the post in first person.
+
+Mention that I am actively looking for new opportunities.
+
+Encourage recruiters and professionals to connect with me.
+
+End with relevant hashtags.
+
+"""
+
+    # -------- Few-shot Examples -------- #
+
+    examples = few_shot.get_filtered_posts(
+        length,
+        language,
+        tag
+    )
 
     if len(examples) > 0:
-        prompt += "4) Use the writing style as per the following examples."
 
-    for i, post in enumerate(examples):
-        post_text = post['text']
-        prompt += f'\n\n Example {i+1}: \n\n {post_text}'
+        prompt += "\n\nWriting Style Examples:\n"
 
-        if i == 1: # Use max two samples
-            break
+        for i, post in enumerate(examples):
+
+            prompt += f"""
+
+Example {i+1}
+
+{post['text']}
+"""
+
+            if i == 1:
+                break
 
     return prompt
-
-
-if __name__ == "__main__":
-    print(generate_post("Medium", "English", "Mental Health"))
