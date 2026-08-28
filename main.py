@@ -124,6 +124,10 @@ def main():
         chunks = chunking_service.create_chunks(pdf_text)
 
         chroma_service = ChromaService(get_chroma_service())
+        if len(chunks) == 0:
+            st.error("No text was extracted from the PDF.")
+            return
+
         chroma_service.add_documents(chunks)
 
         st.success("✅ PDF Uploaded Successfully!")

@@ -1,3 +1,7 @@
+from urllib import response
+
+from httpx import post
+
 from few_shots import FewShotPosts
 from prompts.prompt_templates import LINKEDIN_PROMPT
 from services.llm_service import LLMService
@@ -65,7 +69,12 @@ def generate_post(
 
     response = llm.invoke(prompt)
 
-    return response.content
+    post = response.content.strip()
+
+    if "</think>" in post:
+        post = post.split("</think>", 1)[1].strip()
+
+    return post
 
 
 def get_prompt(
@@ -91,47 +100,50 @@ def get_prompt(
         cta="Yes" if cta else "No"
     )
 
-    # -------- Resume Context (RAG) -------- #
+    # -------- RAG Context -------- #
 
     if retrieved_context:
 
         prompt += f"""
 
-IMPORTANT INSTRUCTIONS:
+IMPORTANT:
 
-You are writing a LinkedIn post for the owner of the uploaded resume.
+You are writing a LinkedIn post using information from the
+uploaded document.
 
-Use the resume information below as the PRIMARY source of information.
+Use the uploaded document information as the PRIMARY source
+of factual information.
 
-Do NOT invent projects, skills, achievements, certifications, companies, or experiences that are not present.
+Do NOT invent projects, skills, achievements, certifications,
+companies, experiences, names, dates, or other facts that are
+not present in the uploaded document.
 
-If the topic matches the resume, naturally include the relevant projects, technologies, achievements, and skills.
+If the topic matches information in the uploaded document,
+naturally include the relevant details.
 
-If the topic is "Open To Work", write the post in first person ("I", "my") and mention that I am actively seeking new opportunities. Highlight my skills and projects from the resume and politely request referrals or opportunities.
+If the topic is "Open To Work", write the post in first person
+using "I" and "my". Highlight relevant skills and projects from
+the uploaded document.
 
-Resume Information:
+Uploaded Document Information:
 ------------------------
 {retrieved_context}
 ------------------------
-
 """
 
     else:
 
         prompt += """
 
-IMPORTANT INSTRUCTIONS:
-
 Generate an engaging LinkedIn post based only on the user's topic.
 
-If the topic is "Open To Work", write the post in first person.
+Do not invent specific achievements, certifications, companies,
+or experiences that were not provided by the user.
 
-Mention that I am actively looking for new opportunities.
-
-Encourage recruiters and professionals to connect with me.
+If the topic is "Open To Work", write in first person and mention
+that I am actively looking for opportunities.
 
 End with relevant hashtags.
-
 """
 
     # -------- Few-shot Examples -------- #
@@ -146,16 +158,39 @@ End with relevant hashtags.
 
         prompt += "\n\nWriting Style Examples:\n"
 
-        for i, post in enumerate(examples):
+        for i, example in enumerate(examples):
 
             prompt += f"""
 
-Example {i+1}
+Example {i + 1}:
 
-{post['text']}
+{example['text']}
 """
 
             if i == 1:
                 break
+
+    # -------- FINAL OUTPUT RULES -------- #
+
+    prompt += """
+
+FINAL OUTPUT RULES:
+
+Return ONLY the final LinkedIn post.
+
+Do NOT include reasoning, thinking process, analysis, planning,
+explanations, drafts, or constraint checks.
+
+Do NOT include <think> or </think> tags.
+
+Do NOT repeat or explain the prompt instructions.
+
+Do NOT say "Here is your LinkedIn post".
+
+Start directly with the final LinkedIn post.
+
+Your entire response must contain only the text that should be
+published on LinkedIn.
+"""
 
     return prompt

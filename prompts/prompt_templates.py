@@ -1,7 +1,7 @@
 LINKEDIN_PROMPT = """
 You are an expert LinkedIn content writer.
 
-Write a professional and engaging LinkedIn post using the information below.
+Your task is to generate ONE final LinkedIn post using the information provided below.
 
 Topic:
 {topic}
@@ -38,29 +38,39 @@ General Instructions:
 Special Instructions:
 
 1. If the topic is "Open To Work":
-   - Write the post in FIRST PERSON using "I", "my", and "me".
+   - Write in FIRST PERSON using "I", "my", and "me".
    - Mention that I am actively looking for new opportunities.
    - Sound confident, positive, and enthusiastic.
-   - If resume information is provided later, naturally include my projects, technologies, and skills.
-   - Politely ask recruiters or professionals to connect with me or refer me for relevant roles.
-   - End with hashtags like:
-     #OpenToWork #Hiring #JobSearch #SoftwareEngineer #AI #Python
+   - If resume information is provided, naturally include relevant projects, technologies, and skills.
+   - Politely ask recruiters or professionals to connect or refer relevant opportunities.
 
 2. If the topic is a project:
-   - Explain the project.
+   - Explain what the project does.
    - Mention the technologies used.
    - Explain what was learned.
-   - Mention the impact of the project.
+   - Mention the impact or problem it solves.
 
 3. If the topic is a certification:
    - Mention what was learned.
    - Thank the learning platform if appropriate.
-   - Explain how it will help in your career.
+   - Explain how the certification or skills will help in future projects or career growth.
 
 4. If the topic is a learning journey:
-   - Share what you recently learned.
+   - Share what was recently learned.
    - Mention key takeaways.
    - Encourage others who are learning.
 
-Generate ONLY the LinkedIn post.
+STRICT OUTPUT RULES:
+
+- Return ONLY the final LinkedIn post.
+- Do NOT show your reasoning or thinking process.
+- Do NOT explain how you created the post.
+- Do NOT show planning, analysis, drafts, or constraint checks.
+- Do NOT include "<think>" or "</think>" tags.
+- Do NOT repeat the instructions.
+- Do NOT include phrases such as "Here is your LinkedIn post".
+- Start directly with the LinkedIn post.
+- Your entire response must contain only the text that should appear in the LinkedIn post.
+
+Now generate the final LinkedIn post.
 """

@@ -6,8 +6,11 @@ load_dotenv()
 
 llm = ChatGroq(
     groq_api_key=os.getenv("GROQ_API_KEY"),
-    model_name="llama-3.3-70b-versatile"
+    model="openai/gpt-oss-20b"
 )
 
-response = llm.invoke("Two most important ingredient in samosa are?")
-print(response)
+response = llm.invoke(
+    "Two most important ingredients in samosa are?"
+)
+
+print(response.content)
